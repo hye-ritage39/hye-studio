@@ -427,7 +427,7 @@ let retroMonth = new Date().toISOString().slice(0,7);
 
 // ---- studio (cover generator) state ----
 function makeBlankPage(name){
-  return { id: uid('page'), name, format:'insta', bg:{type:'color', color:'#0B1C3D', image:null, filter:'none', filterOpacity:50}, layers:[] };
+  return { id: uid('page'), name, format:'insta', bg:{type:'color', color:'#1F2D4D', image:null, filter:'none', filterOpacity:50}, layers:[] };
 }
 let studioPages=[ makeBlankPage('표지 1') ];
 let studioCurrentPageId = studioPages[0].id;
@@ -495,10 +495,13 @@ let brandCustomerList=[], brandCustomerEditingId=null;
 let brandInventoryList=[], brandInventoryEditingId=null;
 let brandGrowthList=[], brandGrowthEditingId=null;
 
-const STUDIO_FONTS={ 'Noto KR':"'Noto Sans KR',sans-serif", 'DM Mono':"'DM Mono',monospace", 'DM Serif':"'DM Serif Display',serif", 'Playfair':"'Playfair Display',serif", 'Space':"'Space Grotesk',sans-serif", 'Bebas':"'Bebas Neue',sans-serif", '구운바탕':"'Gowun Batang',serif", '블랙한산스':"'Black Han Sans',sans-serif", '나눔명조':"'Nanum Myeongjo',serif" };
-const STUDIO_FONT_FAMILY={ 'Noto KR':'Noto Sans KR', 'DM Mono':'DM Mono', 'DM Serif':'DM Serif Display', 'Playfair':'Playfair Display', 'Space':'Space Grotesk', 'Bebas':'Bebas Neue', '구운바탕':'Gowun Batang', '블랙한산스':'Black Han Sans', '나눔명조':'Nanum Myeongjo' };
+const STUDIO_FONTS={ '고운바탕':"'Gowun Batang',serif", 'Noto KR':"'Noto Sans KR',sans-serif", 'DM Mono':"'DM Mono',monospace", 'DM Serif':"'DM Serif Display',serif", 'Playfair':"'Playfair Display',serif", 'Space':"'Space Grotesk',sans-serif", 'Bebas':"'Bebas Neue',sans-serif", '구운바탕':"'Gowun Batang',serif", '블랙한산스':"'Black Han Sans',sans-serif", '나눔명조':"'Nanum Myeongjo',serif" };
+const STUDIO_FONT_FAMILY={ '고운바탕':'Gowun Batang', 'Noto KR':'Noto Sans KR', 'DM Mono':'DM Mono', 'DM Serif':'DM Serif Display', 'Playfair':'Playfair Display', 'Space':'Space Grotesk', 'Bebas':'Bebas Neue', '구운바탕':'Gowun Batang', '블랙한산스':'Black Han Sans', '나눔명조':'Nanum Myeongjo' };
 const STUDIO_WEIGHTS={ 'Light':300, 'Reg':400, 'Med':500, 'Bold':700 };
-const STUDIO_SWATCHES=['#0B1C3D','#F5F1E8','#E8DCC8','#111111','#E4572E','#2E7D5B','#C9974B','#3049D1'];
+// just hye 브랜드 프리셋: 밤 네이비 · 먹색 · 새벽 안개 (각 선택 목록 맨 앞)
+const BRAND_SWATCHES=['#1F2D4D','#16181D','#A9B7CA'];
+const BRAND_SWATCH_NAMES={'#1F2D4D':'밤 네이비','#16181D':'먹색','#A9B7CA':'새벽 안개'};
+const STUDIO_SWATCHES=[...BRAND_SWATCHES,'#0B1C3D','#F5F1E8','#E8DCC8','#111111','#E4572E','#2E7D5B','#C9974B','#3049D1'];
 let studioDownloadFormat='png'; // png | pdf
 
 function uid(p){ return p+'_'+Date.now()+'_'+Math.floor(Math.random()*1000); }
@@ -2929,7 +2932,7 @@ function renderStudio(){
             </div>
             ${p.bg.type==='color' ? `
               <div class="studio-swatches">
-                ${STUDIO_SWATCHES.map(c=>`<div class="studio-swatch ${p.bg.color.toLowerCase()===c.toLowerCase()?'selected':''}" data-swatch="${c}" style="background:${c};"></div>`).join('')}
+                ${STUDIO_SWATCHES.map(c=>`<div class="studio-swatch ${p.bg.color.toLowerCase()===c.toLowerCase()?'selected':''}" data-swatch="${c}" ${BRAND_SWATCH_NAMES[c]?`title="just hye · ${BRAND_SWATCH_NAMES[c]} ${c}"`:''} style="background:${c};"></div>`).join('')}
               </div>
               <div class="studio-hex-row">
                 <input type="color" id="studioBgColor" value="${p.bg.color}">
@@ -3074,7 +3077,7 @@ function renderTextLayerEditor(){
     <div class="studio-mini-label">내용</div>
     <textarea id="tl-text" style="width:100%;min-height:50px;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;">${escapeHtml(l.text)}</textarea>
     <div class="studio-mini-label">폰트</div>
-    <select id="tl-font" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:8px;">${Object.keys(STUDIO_FONTS).map(f=>`<option value="${f}" ${l.font===f?'selected':''}>${f}</option>`).join('')}</select>
+    <select id="tl-font" style="width:100%;padding:7px;border:1px solid var(--line);border-radius:8px;">${Object.keys(STUDIO_FONTS).filter(f=>f!=='구운바탕'||l.font===f).map(f=>`<option value="${f}" ${l.font===f?'selected':''}>${f==='고운바탕'?'고운바탕 · just hye':f}</option>`).join('')}</select>
     <div class="studio-mini-label">크기</div>
     <div class="studio-slider-row"><input type="range" id="tl-size" min="10" max="90" value="${l.size}"><span class="studio-num">${l.size}</span></div>
     <div class="studio-mini-label">굵기</div>
@@ -3086,6 +3089,7 @@ function renderTextLayerEditor(){
       <div class="studio-chip ${l.align==='right'?'active':''}" data-tlalign="right">오른쪽</div>
     </div>
     <div class="studio-mini-label">글자 색상</div>
+    <div class="studio-swatches">${[...BRAND_SWATCHES,'#FFFFFF'].map(c=>`<div class="studio-swatch ${(l.color||'').toLowerCase()===c.toLowerCase()?'selected':''}" data-tlswatch="${c}" title="${BRAND_SWATCH_NAMES[c]?'just hye · '+BRAND_SWATCH_NAMES[c]+' ':''}${c}" style="background:${c};"></div>`).join('')}</div>
     <input type="color" id="tl-color" value="${l.color}" style="width:100%;height:32px;border:1px solid var(--line);border-radius:8px;">
     <div class="studio-mini-label">텍스트 배경</div>
     <div class="studio-btn-row">
@@ -3160,6 +3164,7 @@ function bindStudioEvents(){
   const tlSize=document.getElementById('tl-size'); if(tlSize) tlSize.oninput=(e)=>{ const l=studioGetSelected(); if(l){ l.size=Number(e.target.value); renderLayerOnly(); document.querySelector('.studio-num').textContent=e.target.value; } };
   document.querySelectorAll('[data-tlweight]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l){ l.weight=el.dataset.tlweight; render(); } }; });
   document.querySelectorAll('[data-tlalign]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l){ l.align=el.dataset.tlalign; render(); } }; });
+  document.querySelectorAll('[data-tlswatch]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l){ l.color=el.dataset.tlswatch; render(); } }; });
   const tlColor=document.getElementById('tl-color'); if(tlColor) tlColor.oninput=(e)=>{ const l=studioGetSelected(); if(l){ l.color=e.target.value; renderLayerOnly(); } };
   document.querySelectorAll('[data-tlhl]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l){ l.highlight=el.dataset.tlhl; render(); } }; });
   document.querySelectorAll('[data-tlhlop]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l){ l.highlightOpacity=Number(el.dataset.tlhlop); render(); } }; });
