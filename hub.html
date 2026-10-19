@@ -501,6 +501,41 @@ const STUDIO_WEIGHTS={ 'Light':300, 'Reg':400, 'Med':500, 'Bold':700 };
 // just hye 브랜드 프리셋: 밤 네이비 · 먹색 · 새벽 안개 (각 선택 목록 맨 앞)
 const BRAND_SWATCHES=['#1F2D4D','#16181D','#A9B7CA'];
 const BRAND_SWATCH_NAMES={'#1F2D4D':'밤 네이비','#16181D':'먹색','#A9B7CA':'새벽 안개'};
+// just hye 로고 (C · 인덱스 탭) — 밝은 배경용: 네이비 탭 + 흰 글자 / 어두운 배경용: 새벽 안개 탭 + 먹색 글자
+const LOGO_TEXT='just hye';
+const LOGO_VARIANTS={ light:{fill:'#1F2D4D', text:'#FFFFFF', label:'밝은 배경용'}, dark:{fill:'#A9B7CA', text:'#16181D', label:'어두운 배경용'} };
+const LOGO_FS=34, LOGO_LS=2, LOGO_H=84, LOGO_CUT=22, LOGO_PAD=28;
+let _logoMeasureCtx=null;
+function logoGeom(){
+  if(!_logoMeasureCtx) _logoMeasureCtx=document.createElement('canvas').getContext('2d');
+  _logoMeasureCtx.font="700 "+LOGO_FS+"px 'Gowun Batang'";
+  const chars=[...LOGO_TEXT];
+  const textW=chars.reduce((a,c)=>a+_logoMeasureCtx.measureText(c).width,0)+LOGO_LS*(chars.length-1);
+  const tw=Math.ceil(textW+LOGO_PAD*2); return { tw, W:tw+4, H:LOGO_H };
+}
+function hexLum(hex){ const h=(hex||'#000000').replace('#',''); const c=[0,2,4].map(i=>{ const v=parseInt(h.substr(i,2),16)/255; return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4); }); return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]; }
+function contrastOf(a,b){ const x=hexLum(a), y=hexLum(b); return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05); }
+function logoVariantFor(l,page){
+  if(l.variant==='light'||l.variant==='dark') return l.variant;
+  if(page.bg.type==='color'){ return contrastOf(LOGO_VARIANTS.light.fill,page.bg.color) >= contrastOf(LOGO_VARIANTS.dark.fill,page.bg.color) ? 'light' : 'dark'; }
+  return page.bg.filter==='overlay' ? 'dark' : 'light';
+}
+function logoPath(tw){ return 'M2 '+(LOGO_H-2)+' L2 10 Q2 2 10 2 L'+(tw-LOGO_CUT)+' 2 L'+tw+' '+(2+LOGO_CUT)+' L'+tw+' '+(LOGO_H-2)+' Z'; }
+function logoSvg(l,page){
+  const v=LOGO_VARIANTS[logoVariantFor(l,page)], g=logoGeom();
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+(l.scale||120)+'" viewBox="0 0 '+g.W+' '+g.H+'" style="display:block;pointer-events:none;" role="img" aria-label="'+LOGO_TEXT+'">'
+    +'<path d="'+logoPath(g.tw)+'" fill="'+v.fill+'"/>'
+    +'<text x="'+LOGO_PAD+'" y="56" font-family="\'Gowun Batang\', serif" font-weight="700" font-size="'+LOGO_FS+'" letter-spacing="'+LOGO_LS+'" fill="'+v.text+'">'+LOGO_TEXT+'</text></svg>';
+}
+function drawLogoOnCanvas(ctx,l,page,px,py,scale){
+  const v=LOGO_VARIANTS[logoVariantFor(l,page)], g=logoGeom();
+  const w=(l.scale||120)*scale, k=w/g.W, h=g.H*k;
+  ctx.save(); ctx.translate(px-w/2, py-h/2); ctx.scale(k,k);
+  ctx.fillStyle=v.fill; ctx.fill(new Path2D(logoPath(g.tw)));
+  ctx.font="700 "+LOGO_FS+"px 'Gowun Batang'"; ctx.textBaseline='alphabetic'; ctx.textAlign='left'; ctx.fillStyle=v.text;
+  let x=LOGO_PAD; for(const c of [...LOGO_TEXT]){ ctx.fillText(c,x,56); x+=ctx.measureText(c).width+LOGO_LS; }
+  ctx.restore();
+}
 const STUDIO_SWATCHES=[...BRAND_SWATCHES,'#0B1C3D','#F5F1E8','#E8DCC8','#111111','#E4572E','#2E7D5B','#C9974B','#3049D1'];
 let studioDownloadFormat='png'; // png | pdf
 
@@ -539,7 +574,16 @@ const DEFAULT_CHANNELS=[
 async function loadKey(key, fallback){
   try{ const r=await window.storage.get(key,false); return r?JSON.parse(r.value):fallback; }catch(e){ return fallback; }
 }
-async function saveKey(key, val){ try{ await window.storage.set(key, JSON.stringify(val), false); }catch(e){ console.error(e); } }
+let _saveWarned=false;
+async function saveKey(key, val){
+  try{ await window.storage.set(key, JSON.stringify(val), false); }
+  catch(e){
+    console.error(e);
+    // 브라우저 저장 공간(약 5MB)이 차면 조용히 실패하지 않고 한 번 알려줘요. 큰 이미지 배경이 주원인이에요.
+    const full = e && (e.name==='QuotaExceededError' || e.code===22 || /quota/i.test(String(e.message||'')));
+    if(full && !_saveWarned){ _saveWarned=true; alert('브라우저 저장 공간이 가득 차서 방금 내용이 저장되지 않았어요.\n\n· 블로그 보드의 [백업 저장]으로 지금 상태를 파일로 받아두세요.\n· 작업소에서 쓰지 않는 저장본이나 큰 배경 이미지를 지우면 다시 저장돼요.'); }
+  }
+}
 
 async function loadAll(){
   blogs = await loadKey(BLOGS_KEY, []);
@@ -2876,6 +2920,8 @@ function studioAddLayer(type){
   const base = { id: uid('layer'), type };
   if(type==='text'){
     Object.assign(base, { text:'텍스트를 입력하세요', font:'Noto KR', size:28, weight:'Reg', align:'left', color:'#FFFFFF', highlight:'없음', highlightOpacity:50, x:50, y:50 });
+  } else if(type==='logo'){
+    Object.assign(base, { variant:'auto', scale:120, x:82, y:9 });
   } else {
     Object.assign(base, { image:null, scale:100, x:50, y:50 });
   }
@@ -2958,6 +3004,15 @@ function renderStudio(){
               ${p.layers.filter(l=>l.type==='text').map(l=>`<div class="studio-layer-item ${studioSelectedId===l.id?'selected':''}" data-layer="${l.id}"><span>${escapeHtml((l.text||'').slice(0,18))||'(빈 텍스트)'}</span><span class="del-x" data-dellayer="${l.id}">×</span></div>`).join('')}
             </div>
             ${renderTextLayerEditor()}
+          </div>
+
+          <div class="studio-section">
+            <div class="studio-section-title">just hye 로고</div>
+            <button class="studio-action-btn" id="addLogoLayerBtn">+ 로고 추가</button>
+            <div class="studio-layer-list">
+              ${p.layers.filter(l=>l.type==='logo').map(l=>`<div class="studio-layer-item ${studioSelectedId===l.id?'selected':''}" data-layer="${l.id}"><span>로고 · ${LOGO_VARIANTS[logoVariantFor(l,p)].label}${l.variant==='auto'?' (자동)':''}</span><span class="del-x" data-dellayer="${l.id}">×</span></div>`).join('')}
+            </div>
+            ${renderLogoLayerEditor()}
           </div>
 
           <div class="studio-section">
@@ -3067,6 +3122,9 @@ function studioRenderLayer(l){
     const hlBg = l.highlight==='형광펜' ? `background:linear-gradient(to bottom, transparent 55%, rgba(255,235,59,${(l.highlightOpacity||50)/100}) 55%);` : '';
     return `<div class="studio-layer ${studioSelectedId===l.id?'selected':''}" data-layer="${l.id}" style="left:${l.x}%;top:${l.y}%;font-family:${STUDIO_FONTS[l.font]||'inherit'};font-size:${l.size}px;font-weight:${STUDIO_WEIGHTS[l.weight]||400};color:${l.color};text-align:${l.align};${hlBg}">${escapeHtml(l.text).replace(/\n/g,'<br>')}</div>`;
   }
+  if(l.type==='logo'){
+    return `<div class="studio-layer ${studioSelectedId===l.id?'selected':''}" data-layer="${l.id}" style="left:${l.x}%;top:${l.y}%;padding:0;">${logoSvg(l,curPage())}</div>`;
+  }
   return `<div class="studio-layer ${studioSelectedId===l.id?'selected':''}" data-layer="${l.id}" style="left:${l.x}%;top:${l.y}%;">${l.image?`<img src="${l.image}" style="width:${l.scale}px;">`:''}</div>`;
 }
 
@@ -3099,6 +3157,24 @@ function renderTextLayerEditor(){
     ${l.highlight==='형광펜' ? `<div class="studio-btn-row">${[50,70,90,100].map(o=>`<div class="studio-chip ${l.highlightOpacity===o?'active':''}" data-tlhlop="${o}">${o}%</div>`).join('')}</div>` : ''}
     <div class="studio-mini-label">위치 (드래그 또는 입력)</div>
     <div class="studio-xy"><input type="number" id="tl-x" value="${Math.round(l.x)}" placeholder="X %"><input type="number" id="tl-y" value="${Math.round(l.y)}" placeholder="Y %"></div>
+  `;
+}
+function renderLogoLayerEditor(){
+  const l = studioGetSelected();
+  if(!l || l.type!=='logo') return '';
+  const now = LOGO_VARIANTS[logoVariantFor(l,curPage())].label;
+  return `
+    <div class="studio-mini-label">버전</div>
+    <div class="studio-btn-row">
+      <div class="studio-chip ${l.variant==='auto'?'active':''}" data-logovar="auto">자동</div>
+      <div class="studio-chip ${l.variant==='light'?'active':''}" data-logovar="light">밝은 배경용</div>
+      <div class="studio-chip ${l.variant==='dark'?'active':''}" data-logovar="dark">어두운 배경용</div>
+    </div>
+    <div style="font-size:11px;color:var(--ink-faint);margin:4px 0 6px;">${l.variant==='auto'?'배경색을 보고 더 잘 보이는 쪽을 고릅니다 · 지금: '+now:'지금: '+now}</div>
+    <div class="studio-mini-label">크기</div>
+    <div class="studio-slider-row"><input type="range" id="lg-scale" min="60" max="300" value="${l.scale}"><span class="studio-num">${l.scale}</span></div>
+    <div class="studio-mini-label">위치</div>
+    <div class="studio-xy"><input type="number" id="lg-x" value="${Math.round(l.x)}" placeholder="X %"><input type="number" id="lg-y" value="${Math.round(l.y)}" placeholder="Y %"></div>
   `;
 }
 function renderImageLayerEditor(){
@@ -3147,6 +3223,11 @@ function bindStudioEvents(){
   document.querySelectorAll('[data-bgopacity]').forEach(el=>{ el.onclick=()=>{ p.bg.filterOpacity=Number(el.dataset.bgopacity); render(); }; });
 
   const addTextBtn=document.getElementById('addTextLayerBtn'); if(addTextBtn) addTextBtn.onclick=()=>studioAddLayer('text');
+  const addLogoBtn=document.getElementById('addLogoLayerBtn'); if(addLogoBtn) addLogoBtn.onclick=()=>studioAddLayer('logo');
+  document.querySelectorAll('[data-logovar]').forEach(el=>{ el.onclick=()=>{ const l=studioGetSelected(); if(l&&l.type==='logo'){ l.variant=el.dataset.logovar; render(); } }; });
+  const lgScale=document.getElementById('lg-scale'); if(lgScale) lgScale.oninput=(e)=>{ const l=studioGetSelected(); if(l){ l.scale=Number(e.target.value); renderLayerOnly(); const n=lgScale.parentNode.querySelector('.studio-num'); if(n) n.textContent=e.target.value; } };
+  const lgX=document.getElementById('lg-x'); if(lgX) lgX.onchange=(e)=>{ const l=studioGetSelected(); if(l){ l.x=Number(e.target.value); render(); } };
+  const lgY=document.getElementById('lg-y'); if(lgY) lgY.onchange=(e)=>{ const l=studioGetSelected(); if(l){ l.y=Number(e.target.value); render(); } };
   const pngUpload=document.getElementById('studioPngUpload'); if(pngUpload) pngUpload.onchange=(e)=>{
     const file=e.target.files[0]; if(!file) return;
     const reader=new FileReader(); reader.onload=()=>{
@@ -3264,6 +3345,8 @@ async function studioBuildCanvas(page){
       }
       ctx.fillStyle = l.color||'#FFFFFF';
       lines.forEach((ln,idx)=>{ ctx.fillText(ln, px, startY+idx*lineHeight); });
+    } else if(l.type==='logo'){
+      drawLogoOnCanvas(ctx,l,page,px,py,scale);
     } else if(l.type==='image' && l.image){
       try{
         const img = await loadImageEl(l.image);
