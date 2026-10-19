@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cover Generator v9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;500;700&family=Bebas+Neue&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;500;700&family=Bebas+Neue&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 html,body{margin:0;padding:0;height:100%;overflow:hidden;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -109,7 +109,10 @@ input[type=color]{width:0;height:0;opacity:0;position:absolute;pointer-events:no
           <div class="btn-row c2"><button class="ob on" id="bgm-color" onclick="setBgMode('color')">단색</button><button class="ob" id="bgm-image" onclick="setBgMode('image')">이미지</button></div>
           <div id="bg-color-ui">
             <div class="csw-row" id="bg-csws">
-              <div class="csw on" style="background:#1a2744" data-c="#1a2744" onclick="setBgSw(this)"></div>
+              <div class="csw on" style="background:#1F2D4D" data-c="#1F2D4D" title="just hye · 밤 네이비 #1F2D4D" onclick="setBgSw(this)"></div>
+              <div class="csw" style="background:#16181D" data-c="#16181D" title="just hye · 먹색 #16181D" onclick="setBgSw(this)"></div>
+              <div class="csw" style="background:#A9B7CA" data-c="#A9B7CA" title="just hye · 새벽 안개 #A9B7CA" onclick="setBgSw(this)"></div>
+              <div class="csw" style="background:#1a2744" data-c="#1a2744" onclick="setBgSw(this)"></div>
               <div class="csw" style="background:#f5f5f0" data-c="#f5f5f0" onclick="setBgSw(this)"></div>
               <div class="csw" style="background:#f0ebe3" data-c="#f0ebe3" onclick="setBgSw(this)"></div>
               <div class="csw" style="background:#0d0d0d" data-c="#0d0d0d" onclick="setBgSw(this)"></div>
@@ -118,7 +121,7 @@ input[type=color]{width:0;height:0;opacity:0;position:absolute;pointer-events:no
               <div class="csw" style="background:#c8a87a" data-c="#c8a87a" onclick="setBgSw(this)"></div>
               <div class="csw" style="background:#6b7fd4" data-c="#6b7fd4" onclick="setBgSw(this)"></div>
             </div>
-            <div class="c-input"><div class="cthumb" id="bgThumb" style="background:#1a2744" onclick="document.getElementById('bgPicker').click()"></div><input type="color" id="bgPicker" value="#1a2744" oninput="onBgPick(this.value)"><input class="chex" id="bgHex" type="text" value="#1a2744" maxlength="7" oninput="onBgHex(this.value)"></div>
+            <div class="c-input"><div class="cthumb" id="bgThumb" style="background:#1F2D4D" onclick="document.getElementById('bgPicker').click()"></div><input type="color" id="bgPicker" value="#1F2D4D" oninput="onBgPick(this.value)"><input class="chex" id="bgHex" type="text" value="#1F2D4D" maxlength="7" oninput="onBgHex(this.value)"></div>
           </div>
           <div id="bg-img-ui" style="display:none;">
             <div class="ubtn">이미지 업로드<input type="file" accept="image/*" onchange="loadBgImg(event)"></div>
@@ -136,18 +139,18 @@ input[type=color]{width:0;height:0;opacity:0;position:absolute;pointer-events:no
           <button class="ghost-btn" onclick="addText()">+ 텍스트 추가</button>
           <div id="te" style="display:none;">
             <input class="fi" id="te-val" type="text" placeholder="텍스트 입력" oninput="updTL()">
-            <div class="r2"><div><span class="lbl">폰트</span><select class="fs" id="te-font" onchange="updTL()"><option value="'Noto Sans KR'">Noto KR</option><option value="'DM Mono'">DM Mono</option><option value="'DM Serif Display'">DM Serif</option><option value="'Playfair Display'">Playfair</option><option value="'Space Grotesk'">Space</option><option value="'Bebas Neue'">Bebas</option></select></div><div><span class="lbl">크기</span><input class="fi" id="te-sz" type="number" value="80" min="8" max="400" oninput="updTL()"></div></div>
+            <div class="r2"><div><span class="lbl">폰트</span><select class="fs" id="te-font" onchange="updTL()"><option value="'Gowun Batang'">고운바탕 · just hye</option><option value="'Noto Sans KR'">Noto KR</option><option value="'DM Mono'">DM Mono</option><option value="'DM Serif Display'">DM Serif</option><option value="'Playfair Display'">Playfair</option><option value="'Space Grotesk'">Space</option><option value="'Bebas Neue'">Bebas</option></select></div><div><span class="lbl">크기</span><input class="fi" id="te-sz" type="number" value="80" min="8" max="400" oninput="updTL()"></div></div>
             <span class="lbl">굵기</span>
             <div class="btn-row c4" style="margin-bottom:8px;"><button class="ob" id="tw-300" onclick="setTW('300')">Light</button><button class="ob on" id="tw-400" onclick="setTW('400')">Reg</button><button class="ob" id="tw-500" onclick="setTW('500')">Med</button><button class="ob" id="tw-700" onclick="setTW('700')">Bold</button></div>
             <span class="lbl">정렬</span>
             <div class="btn-row c3" style="margin-bottom:8px;"><button class="ob on" id="ta-left" onclick="setTA('left')">왼쪽</button><button class="ob" id="ta-center" onclick="setTA('center')">가운데</button><button class="ob" id="ta-right" onclick="setTA('right')">오른쪽</button></div>
             <span class="lbl">글자 색상</span>
-            <div class="csw-row"><div class="csw" style="background:#ffffff" onclick="setTC('#ffffff')"></div><div class="csw" style="background:#1a1a1a" onclick="setTC('#1a1a1a')"></div><div class="csw" style="background:#e85d5d" onclick="setTC('#e85d5d')"></div><div class="csw" style="background:#c8a87a" onclick="setTC('#c8a87a')"></div><div class="csw" style="background:#9fc4be" onclick="setTC('#9fc4be')"></div><div class="csw" style="background:#aaaaaa" onclick="setTC('#aaaaaa')"></div></div>
+            <div class="csw-row"><div class="csw" style="background:#1F2D4D" title="just hye · 밤 네이비 #1F2D4D" onclick="setTC('#1F2D4D')"></div><div class="csw" style="background:#16181D" title="just hye · 먹색 #16181D" onclick="setTC('#16181D')"></div><div class="csw" style="background:#A9B7CA" title="just hye · 새벽 안개 #A9B7CA" onclick="setTC('#A9B7CA')"></div><div class="csw" style="background:#ffffff" onclick="setTC('#ffffff')"></div><div class="csw" style="background:#1a1a1a" onclick="setTC('#1a1a1a')"></div><div class="csw" style="background:#e85d5d" onclick="setTC('#e85d5d')"></div><div class="csw" style="background:#c8a87a" onclick="setTC('#c8a87a')"></div><div class="csw" style="background:#9fc4be" onclick="setTC('#9fc4be')"></div><div class="csw" style="background:#aaaaaa" onclick="setTC('#aaaaaa')"></div></div>
             <div class="c-input" style="margin-bottom:8px;"><div class="cthumb" id="tcThumb" style="background:#ffffff" onclick="document.getElementById('tcPicker').click()"></div><input type="color" id="tcPicker" value="#ffffff" oninput="onTCPick(this.value)"><input class="chex" id="tcHex" type="text" value="#ffffff" maxlength="7" oninput="onTCHex(this.value)"></div>
             <span class="lbl">텍스트 배경</span>
             <div class="btn-row c2" style="margin-bottom:6px;"><button class="ob on" id="tbg-none" onclick="setTBg('none')">없음</button><button class="ob" id="tbg-color" onclick="setTBg('color')">형광펜</button></div>
             <div id="tbg-ui" style="display:none;">
-              <div class="csw-row" id="tbg-csws"><div class="csw" style="background:#ffe066" onclick="setTBgColor(this,'#ffe066')"></div><div class="csw" style="background:#ff9de2" onclick="setTBgColor(this,'#ff9de2')"></div><div class="csw" style="background:#7efff5" onclick="setTBgColor(this,'#7efff5')"></div><div class="csw" style="background:#ffffff" onclick="setTBgColor(this,'#ffffff')"></div><div class="csw" style="background:#1a1a1a" onclick="setTBgColor(this,'#1a1a1a')"></div><div class="csw" style="background:#e85d5d" onclick="setTBgColor(this,'#e85d5d')"></div></div>
+              <div class="csw-row" id="tbg-csws"><div class="csw" style="background:#1F2D4D" title="just hye · 밤 네이비 #1F2D4D" onclick="setTBgColor(this,'#1F2D4D')"></div><div class="csw" style="background:#16181D" title="just hye · 먹색 #16181D" onclick="setTBgColor(this,'#16181D')"></div><div class="csw" style="background:#A9B7CA" title="just hye · 새벽 안개 #A9B7CA" onclick="setTBgColor(this,'#A9B7CA')"></div><div class="csw" style="background:#ffe066" onclick="setTBgColor(this,'#ffe066')"></div><div class="csw" style="background:#ff9de2" onclick="setTBgColor(this,'#ff9de2')"></div><div class="csw" style="background:#7efff5" onclick="setTBgColor(this,'#7efff5')"></div><div class="csw" style="background:#ffffff" onclick="setTBgColor(this,'#ffffff')"></div><div class="csw" style="background:#1a1a1a" onclick="setTBgColor(this,'#1a1a1a')"></div><div class="csw" style="background:#e85d5d" onclick="setTBgColor(this,'#e85d5d')"></div></div>
               <div class="c-input" style="margin-bottom:6px;"><div class="cthumb" id="tbgThumb" style="background:#ffe066" onclick="document.getElementById('tbgPicker').click()"></div><input type="color" id="tbgPicker" value="#ffe066" oninput="onTBgPick(this.value)"><input class="chex" id="tbgHex" type="text" value="#ffe066" maxlength="7" oninput="onTBgHex(this.value)"></div>
               <div class="btn-row c4"><button class="ob" id="tbo-50" onclick="setTBgOp(.5)">50%</button><button class="ob" id="tbo-70" onclick="setTBgOp(.7)">70%</button><button class="ob on" id="tbo-90" onclick="setTBgOp(.9)">90%</button><button class="ob" id="tbo-100" onclick="setTBgOp(1)">100%</button></div>
             </div>
@@ -181,7 +184,7 @@ input[type=color]{width:0;height:0;opacity:0;position:absolute;pointer-events:no
 <script>
 const FMTS={insta:{w:1080,h:1350},mag:{w:794,h:1123}};
 let pages=[],curPg=0,mode='insta',tlId=0,dcId=0;
-function newPage(){return{bgMode:'color',bgColor:'#1a2744',bgImg:null,filter:'orig',ov:0,textLayers:[],activeTL:null,decos:[]};}
+function newPage(){return{bgMode:'color',bgColor:'#1F2D4D',bgImg:null,filter:'orig',ov:0,textLayers:[],activeTL:null,decos:[]};}
 function pg(){return pages[curPg];}
 pages.push(newPage());
 const cv=document.getElementById('cv'),cx=cv.getContext('2d');
@@ -347,6 +350,8 @@ async function confirmDl(){const cbs=document.querySelectorAll('#pg-check-list i
 function toggleSec(hd){hd.classList.toggle('open');hd.nextElementSibling.classList.toggle('hidden',!hd.classList.contains('open'));}
 
 rebuildSB();resizeCanvas();syncPanel();renderAll();
+// just hye: 고운바탕이 늦게 불러와져도 캔버스를 다시 그려 글꼴이 바로 반영되게 함
+if(document.fonts){Promise.all([document.fonts.load("400 40px 'Gowun Batang'"),document.fonts.load("700 40px 'Gowun Batang'")]).then(()=>renderAll()).catch(()=>{});document.fonts.ready.then(()=>renderAll());}
 </script>
 </body>
 </html>
